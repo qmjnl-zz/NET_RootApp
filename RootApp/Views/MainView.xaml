@@ -1,0 +1,39 @@
+﻿<Window x:Class="RootApp.Views.MainView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RootApp"
+        xmlns:local_Controls="clr-namespace:RootApp.Controls"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        WindowStartupLocation="CenterScreen"
+        Title="RootApp"
+        Height="640"
+        Width="960">
+    <DockPanel>
+        <Button DockPanel.Dock="Top"
+                Content="New Path"
+                Focusable="False"
+                HorizontalAlignment="Left"
+                Click="Button_Click"
+                Padding="8,2,8,2"
+                Margin="4" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <!--<ColumnDefinition Width="*" />-->
+            </Grid.ColumnDefinitions>
+            <local_Controls:ExplorerControl Grid.Column="0"
+                                            x:Name="explorer1" />
+            <GridSplitter Grid.Column="1"
+                          Width="5"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Stretch"
+                          Focusable="False" />
+            <!--<local_Controls:ExplorerControl Grid.Column="2"
+                               x:Name="explorer2" />-->
+        </Grid>
+    </DockPanel>
+</Window>
