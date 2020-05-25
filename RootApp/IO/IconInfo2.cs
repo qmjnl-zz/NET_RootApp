@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -76,8 +72,7 @@ namespace RootApp.IO
     [StructLayout(LayoutKind.Sequential)]
     public struct POINT
     {
-        int x;
-        int y;
+        int x, y;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -175,10 +170,10 @@ namespace RootApp.IO
         [DllImport("Shell32.dll")]
         private static extern IntPtr SHGetFileInfo(
             string pszPath,
-            uint dwFileAttributes,
+            FileAttributes dwFileAttributes,
             ref SHFILEINFO psfi,
-            uint cbFileInfo,
-            uint uFlags
+            int cbFileInfo,
+            SHGFI uFlags
         );
 
         // *****
@@ -186,11 +181,13 @@ namespace RootApp.IO
         private static int GetIconIndex(string pszFile)
         {
             SHFILEINFO sfi = new SHFILEINFO();
-            SHGetFileInfo(pszFile
-                , (uint)FileAttributes.Directory/*0*/
-                , ref sfi
-                , (uint)System.Runtime.InteropServices.Marshal.SizeOf(sfi)
-                , (uint)(SHGFI.SHGFI_SYSICONINDEX | SHGFI.SHGFI_LARGEICON | SHGFI.SHGFI_USEFILEATTRIBUTES));
+            SHGetFileInfo(
+                pszFile,
+                0,
+                ref sfi,
+                SHFILEINFO.Size,
+                SHGFI.SHGFI_SYSICONINDEX | SHGFI.SHGFI_LARGEICON | SHGFI.SHGFI_USEFILEATTRIBUTES
+            );
             return sfi.iIcon;
         }
 
@@ -211,35 +208,44 @@ namespace RootApp.IO
 
         public static ImageSource GetSystemIcon(string path, IconSize iconSize, FileAttributes fileAttributes = new FileAttributes())
         {
-            SHFILEINFO sfi = new SHFILEINFO();
-            SHGetFileInfo(path
-                , (uint)fileAttributes
-                , ref sfi
-                , (uint)System.Runtime.InteropServices.Marshal.SizeOf(sfi)
-                , (uint)(SHGFI.SHGFI_SYSICONINDEX | SHGFI.SHGFI_LARGEICON | SHGFI.SHGFI_USEFILEATTRIBUTES));
+            Size size = GetIconSize(iconSize);
+            SHFILEINFO shfi = new SHFILEINFO();
 
-            // *****
+            IntPtr iconHandle = IntPtr.Zero;
+            ImageSource imageSource = null;
 
-            IImageList spiml = null;
-            Guid guil = new Guid(IID_IImageList);
-
-            SHGetImageList(SHIL_EXTRALARGE, ref guil, ref spiml);
-            IntPtr hIcon = IntPtr.Zero;
-            spiml.GetIcon(sfi.iIcon, ILD_TRANSPARENT | ILD_IMAGE, ref hIcon);
-
-            // *****
-
-            ImageSource imageSource;
-
-            // from native to managed
-            using (Icon ico = (Icon)System.Drawing.Icon.FromHandle(hIcon).Clone())
+            try
             {
-                imageSource = Imaging.CreateBitmapSourceFromHIcon(
-                    ico.Handle,
-                    System.Windows.Int32Rect.Empty,
-                    BitmapSizeOptions.FromWidthAndHeight(48, 48/*size.Width, size.Height*/));
+                SHGetFileInfo(
+                    path,
+                    fileAttributes,
+                    ref shfi,
+                    SHFILEINFO.Size,
+                    SHGFI.SHGFI_SYSICONINDEX | SHGFI.SHGFI_USEFILEATTRIBUTES | (iconSize == IconSize.Small ? SHGFI.SHGFI_SMALLICON : SHGFI.SHGFI_LARGEICON));
+
+                IImageList imageList = null;
+                Guid guid = new Guid(IID_IImageList);
+
+                SHGetImageList((int)iconSize, ref guid, ref imageList);
+                imageList.GetIcon(shfi.iIcon, (int)(IMAGELISTDRAWFLAGS.ILD_TRANSPARENT | IMAGELISTDRAWFLAGS.ILD_IMAGE), ref iconHandle);
+
+                using (Icon icon = (Icon)Icon.FromHandle(iconHandle).Clone())
+                {
+                    imageSource = Imaging.CreateBitmapSourceFromHIcon(
+                        icon.Handle,
+                        System.Windows.Int32Rect.Empty,
+                        BitmapSizeOptions.FromWidthAndHeight(size.Width, size.Height));
+                }
             }
-            DestroyIcon(hIcon); // don't forget to cleanup
+            catch (Exception)
+            {
+
+            }
+            finally
+            {
+                if (shfi.hIcon != IntPtr.Zero) DestroyIcon(shfi.hIcon);
+                if (iconHandle != IntPtr.Zero) DestroyIcon(iconHandle);
+            }
 
             return imageSource;
         }

@@ -7,7 +7,7 @@ namespace RootApp.IO
 {
     public class EntryFactory
     {
-        private const IconInfo.IconSize iconSize = IconInfo.IconSize.ExtraLarge;
+        private const IconInfo.IconSize iconSize = IconInfo.IconSize.Small;
         private const string defaultDirectoryPath = @"C:\Path";
         private const string defaultDirectoryExtension = "<directory>";
         private const string defaultFilePath = @"C:\Path";

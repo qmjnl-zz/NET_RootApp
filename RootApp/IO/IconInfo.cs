@@ -109,7 +109,8 @@ namespace RootApp.IO
             FileAttributes dwFileAttributes,
             ref SHFILEINFO psfi,
             int cbFileInfo,
-            SHGFI uFlags);
+            SHGFI uFlags
+        );
 
         [DllImport("comctl32.dll", SetLastError = true)]
         private static extern IntPtr ImageList_GetIcon(IntPtr himl, int i, IMAGELISTDRAWFLAGS flags);
