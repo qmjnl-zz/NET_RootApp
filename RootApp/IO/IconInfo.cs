@@ -104,7 +104,12 @@ namespace RootApp.IO
         }
 
         [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr SHGetFileInfo(string pszPath, FileAttributes dwFileAttributes, ref SHFILEINFO psfi, int cbFileInfo, SHGFI uFlags);
+        private static extern IntPtr SHGetFileInfo(
+            string pszPath,
+            FileAttributes dwFileAttributes,
+            ref SHFILEINFO psfi,
+            int cbFileInfo,
+            SHGFI uFlags);
 
         [DllImport("comctl32.dll", SetLastError = true)]
         private static extern IntPtr ImageList_GetIcon(IntPtr himl, int i, IMAGELISTDRAWFLAGS flags);

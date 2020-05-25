@@ -70,6 +70,7 @@
     <Compile Include="IO\EntryIconSize.cs" />
     <Compile Include="IO\EntryType.cs" />
     <Compile Include="IO\IconInfo.cs" />
+    <Compile Include="IO\IconInfo2.cs" />
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
