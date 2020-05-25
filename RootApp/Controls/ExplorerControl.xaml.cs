@@ -15,7 +15,7 @@ namespace RootApp.Controls
     public partial class ExplorerControl : UserControl
     {
         //private ObservableCollection<Entry> listFileInfo = new ObservableCollection<Entry>();
-        private EntryFactory entryFactory = new EntryFactory();
+        private readonly EntryFactory entryFactory = new EntryFactory();
 
         public string Path
         {
@@ -123,8 +123,7 @@ namespace RootApp.Controls
         {
             for (int i = 0; i < listViewFile.Items.Count; i++)
             {
-                Entry entry = listViewFile.Items[i] as Entry;
-                if (entry != null && entry.FullName == path)
+                if (listViewFile.Items[i] is Entry entry && entry.FullName == path)
                 {
                     SelectEntry(i, scroll);
                     return;
@@ -132,7 +131,7 @@ namespace RootApp.Controls
             }
         }
 
-        private void listViewFile_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void ListViewFile_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Back)
             {

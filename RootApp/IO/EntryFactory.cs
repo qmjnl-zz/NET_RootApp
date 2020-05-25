@@ -7,23 +7,23 @@ namespace RootApp.IO
 {
     public class EntryFactory
     {
+        private const IconInfo.IconSize iconSize = IconInfo.IconSize.Large;
         private const string defaultDirectoryPath = @"C:\Path";
         private const string defaultDirectoryExtension = "<directory>";
         private const string defaultFilePath = @"C:\Path";
         private const string defaultFileExtension = "<file>";
 
-        private const Shell32.IconSize iconSize = Shell32.IconSize.Small;
         private readonly Dictionary<string, ImageSource> icons = new Dictionary<string, ImageSource>();
 
         public EntryFactory()
         {
             if (!icons.ContainsKey(defaultDirectoryExtension))
             {
-                icons.Add(defaultDirectoryExtension, Shell32.GetIcon(defaultDirectoryPath, iconSize));
+                icons.Add(defaultDirectoryExtension, IconInfo.GetSystemIcon(defaultDirectoryPath, iconSize, FileAttributes.Directory));
             }
             if (!icons.ContainsKey(defaultFileExtension))
             {
-                icons.Add(defaultFileExtension, Shell32.GetIcon(defaultFilePath, iconSize, false));
+                icons.Add(defaultFileExtension, IconInfo.GetSystemIcon(defaultFilePath, iconSize, FileAttributes.Normal));
             }
         }
 
@@ -33,7 +33,7 @@ namespace RootApp.IO
             try
             {
                 entry.Type = EntryType.Drive;
-                entry.Icon = Shell32.GetIcon(info.Name, iconSize);
+                entry.Icon = IconInfo.GetSystemIcon(info.Name, iconSize);
                 entry.FullName = info.Name;
                 entry.Name = info.Name;
                 entry.Size = info.TotalSize;
@@ -67,8 +67,8 @@ namespace RootApp.IO
                 return new Entry
                 {
                     Type = EntryType.Directory,
-                    Icon = icons.ContainsKey(path) ? icons[path] : icons[defaultDirectoryExtension],
-                    //Icon = Shell.GetIcon(path, iconSize /*Add no file attributes parameter*/),
+                    //Icon = icons[defaultDirectoryExtension],
+                    Icon = IconInfo.GetFileIcon(path, iconSize),
                     FullName = info.FullName,
                     Name = info.Name,
                     Date = File.GetLastWriteTime(path)
@@ -89,13 +89,14 @@ namespace RootApp.IO
                 string extension = String.IsNullOrEmpty(info.Extension) ? defaultFileExtension : info.Extension;
                 if (!icons.ContainsKey(extension))
                 {
-                    icons.Add(extension, Shell32.GetIcon(extension, iconSize, false));
+                    icons.Add(extension, IconInfo.GetSystemIcon(extension, iconSize, FileAttributes.Normal));
                 }
 
                 Entry entry = new Entry
                 {
                     Type = EntryType.File,
-                    Icon = icons[extension],
+                    //Icon = icons[extension],
+                    Icon = IconInfo.GetFileIcon(path, iconSize),
                     FullName = info.FullName,
                     Name = info.Name.Substring(0, info.Name.Length - info.Extension.Length),
                     Extension = info.Extension,
