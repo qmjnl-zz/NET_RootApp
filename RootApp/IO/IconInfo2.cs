@@ -167,6 +167,9 @@ namespace RootApp.IO
         [DllImport("shell32.dll")]
         public static extern uint SHGetIDListFromObject([MarshalAs(UnmanagedType.IUnknown)] object iUnknown, out IntPtr ppidl);
 
+        [DllImport("shell32.dll")]
+        public static extern int SHGetIconOverlayIndex(string pszIconPath, int iIconIndex);
+
         [DllImport("Shell32.dll")]
         private static extern IntPtr SHGetFileInfo(
             string pszPath,
@@ -221,13 +224,22 @@ namespace RootApp.IO
                     fileAttributes,
                     ref shfi,
                     SHFILEINFO.Size,
-                    SHGFI.SHGFI_SYSICONINDEX | SHGFI.SHGFI_USEFILEATTRIBUTES | (iconSize == IconSize.Small ? SHGFI.SHGFI_SMALLICON : SHGFI.SHGFI_LARGEICON));
+                    SHGFI.SHGFI_SYSICONINDEX | SHGFI.SHGFI_ICON
+                    //| SHGFI.SHGFI_OVERLAYINDEX
+                    | (iconSize == IconSize.Small ? SHGFI.SHGFI_SMALLICON : SHGFI.SHGFI_LARGEICON));
 
                 IImageList imageList = null;
                 Guid guid = new Guid(IID_IImageList);
 
                 SHGetImageList((int)iconSize, ref guid, ref imageList);
                 imageList.GetIcon(shfi.iIcon, (int)(IMAGELISTDRAWFLAGS.ILD_TRANSPARENT | IMAGELISTDRAWFLAGS.ILD_IMAGE), ref iconHandle);
+
+                //int overlayIndex = (shfi.iIcon >> 24) - 1;
+                //if (overlayIndex >= 0x0)
+                //{
+                //    overlayIndex = SHGetIconOverlayIndex(null, 0x0FFFFFFE) - 1;
+                //    imageList.GetIcon(overlayIndex, (int)(IMAGELISTDRAWFLAGS.ILD_TRANSPARENT | IMAGELISTDRAWFLAGS.ILD_IMAGE), ref iconHandle);
+                //}
 
                 using (Icon icon = (Icon)Icon.FromHandle(iconHandle).Clone())
                 {

@@ -70,8 +70,8 @@ namespace RootApp.IO
                 return new Entry
                 {
                     Type = EntryType.Directory,
-                    Icon = icons[defaultDirectoryExtension],
-                    //Icon = IconInfo.GetSystemIcon(path, iconSize),
+                    //Icon = icons[defaultDirectoryExtension],
+                    Icon = IconInfo2.GetSystemIcon(path, iconSize),
                     FullName = info.FullName,
                     Name = info.Name,
                     Date = File.GetLastWriteTime(path)
@@ -99,8 +99,8 @@ namespace RootApp.IO
                 Entry entry = new Entry
                 {
                     Type = EntryType.File,
-                    Icon = icons[extension],
-                    //Icon = IconInfo.GetSystemIcon(path, iconSize),
+                    //Icon = icons[extension],
+                    Icon = IconInfo2.GetSystemIcon(path, iconSize),
                     FullName = info.FullName,
                     Name = info.Name.Substring(0, info.Name.Length - info.Extension.Length),
                     Extension = info.Extension,
