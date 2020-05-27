@@ -162,6 +162,7 @@ namespace RootApp.Controls
                 if (entry.Type == EntryType.Drive || entry.Type == EntryType.Directory)
                 {
                     Path = entry.FullName;
+                    SelectEntry(0, true);
                 }
                 return;
             }

@@ -13,19 +13,31 @@ namespace RootApp.IO
         private const string defaultFilePath = @"C:\Path";
         private const string defaultFileExtension = "<file>";
 
+        private List<string> fileExtensions = new List<string> { "exe", "lnk" };
+        IconInfo2.IconType iconType = IconInfo2.IconType.File;
+
         private readonly Dictionary<string, ImageSource> icons = new Dictionary<string, ImageSource>();
 
         public EntryFactory()
         {
             if (!icons.ContainsKey(defaultDirectoryExtension))
             {
-                //icons.Add(defaultDirectoryExtension, IconInfo.GetSystemIcon(defaultDirectoryPath, iconSize, FileAttributes.Directory));
-                icons.Add(defaultDirectoryExtension, IconInfo2.GetSystemIcon(defaultDirectoryPath, iconSize, FileAttributes.Directory));
+                icons.Add(defaultDirectoryExtension, IconInfo2.GetSystemIcon(
+                    defaultDirectoryPath,
+                    iconSize,
+                    IconInfo2.IconType.System,
+                    FileAttributes.Directory
+                ));
             }
+
             if (!icons.ContainsKey(defaultFileExtension))
             {
-                //icons.Add(defaultFileExtension, IconInfo.GetSystemIcon(defaultFilePath, iconSize, FileAttributes.Normal));
-                icons.Add(defaultFileExtension, IconInfo2.GetSystemIcon(defaultFilePath, iconSize, FileAttributes.Normal));
+                icons.Add(defaultFileExtension, IconInfo2.GetSystemIcon(
+                    defaultFilePath,
+                    iconSize,
+                    IconInfo2.IconType.System,
+                    FileAttributes.Normal
+                ));
             }
         }
 
@@ -35,8 +47,7 @@ namespace RootApp.IO
             try
             {
                 entry.Type = EntryType.Drive;
-                //entry.Icon = IconInfo.GetSystemIcon(info.Name, iconSize);
-                entry.Icon = IconInfo2.GetSystemIcon(info.Name, iconSize);
+                entry.Icon = IconInfo2.GetSystemIcon(info.Name, iconSize, IconInfo2.IconType.File);
                 entry.FullName = info.Name;
                 entry.Name = info.Name;
                 entry.Size = info.TotalSize;
@@ -67,11 +78,17 @@ namespace RootApp.IO
             try
             {
                 DirectoryInfo info = new DirectoryInfo(path);
+
+                string iconPath = iconType == IconInfo2.IconType.File ? path : defaultDirectoryExtension;
+                if (!icons.ContainsKey(iconPath))
+                {
+                    icons.Add(iconPath, IconInfo2.GetSystemIcon(iconPath, iconSize, iconType, FileAttributes.Directory));
+                }
+
                 return new Entry
                 {
                     Type = EntryType.Directory,
-                    //Icon = icons[defaultDirectoryExtension],
-                    Icon = IconInfo2.GetSystemIcon(path, iconSize),
+                    Icon = icons[iconPath],
                     FullName = info.FullName,
                     Name = info.Name,
                     Date = File.GetLastWriteTime(path)
@@ -89,18 +106,25 @@ namespace RootApp.IO
             {
                 FileInfo info = new FileInfo(path);
 
-                string extension = String.IsNullOrEmpty(info.Extension) ? defaultFileExtension : info.Extension;
-                if (!icons.ContainsKey(extension))
+                string iconPath = String.IsNullOrEmpty(info.Extension) ? defaultFileExtension : info.Extension;
+                if (!icons.ContainsKey(iconPath))
                 {
-                    //icons.Add(extension, IconInfo.GetSystemIcon(extension, iconSize, FileAttributes.Normal));
-                    icons.Add(extension, IconInfo2.GetSystemIcon(extension, iconSize, FileAttributes.Normal));
+                    icons.Add(iconPath, IconInfo2.GetSystemIcon(iconPath, iconSize, IconInfo2.IconType.System, FileAttributes.Normal));
+                }
+
+                if (iconType == IconInfo2.IconType.File && fileExtensions.Contains(iconPath.Replace(".", "")))
+                {
+                    iconPath = path;
+                    if (!icons.ContainsKey(iconPath))
+                    {
+                        icons.Add(iconPath, IconInfo2.GetSystemIcon(iconPath, iconSize, iconType, FileAttributes.Normal));
+                    }
                 }
 
                 Entry entry = new Entry
                 {
                     Type = EntryType.File,
-                    //Icon = icons[extension],
-                    Icon = IconInfo2.GetSystemIcon(path, iconSize),
+                    Icon = icons[iconPath],
                     FullName = info.FullName,
                     Name = info.Name.Substring(0, info.Name.Length - info.Extension.Length),
                     Extension = info.Extension,

@@ -195,23 +195,43 @@ namespace RootApp.IO
         }
 
         // 256*256
-        private static IntPtr GetJumboIcon(int iImage)
-        {
-            IImageList spiml = null;
-            Guid guil = new Guid(IID_IImageList);
+        //private static IntPtr GetJumboIcon(int iImage)
+        //{
+        //    IImageList spiml = null;
+        //    Guid guil = new Guid(IID_IImageList);
 
-            SHGetImageList(SHIL_EXTRALARGE, ref guil, ref spiml);
-            IntPtr hIcon = IntPtr.Zero;
-            spiml.GetIcon(iImage, ILD_TRANSPARENT | ILD_IMAGE, ref hIcon);
+        //    SHGetImageList(SHIL_EXTRALARGE, ref guil, ref spiml);
+        //    IntPtr hIcon = IntPtr.Zero;
+        //    spiml.GetIcon(iImage, ILD_TRANSPARENT | ILD_IMAGE, ref hIcon);
 
-            return hIcon;
-        }
+        //    return hIcon;
+        //}
 
         // *****
 
-        public static ImageSource GetSystemIcon(string path, IconSize iconSize, FileAttributes fileAttributes = new FileAttributes())
+        public enum IconType
+        {
+            System,
+            File
+        }
+
+        public static ImageSource GetSystemIcon(string path, IconSize iconSize, IconType iconType, FileAttributes fileAttributes = new FileAttributes())
         {
             Size size = GetIconSize(iconSize);
+
+            SHGFI flags = SHGFI.SHGFI_SYSICONINDEX | (iconSize == IconSize.Small ? SHGFI.SHGFI_SMALLICON : SHGFI.SHGFI_LARGEICON);
+            switch (iconType)
+            {
+                case IconType.System:
+                    flags |= SHGFI.SHGFI_USEFILEATTRIBUTES;
+                    break;
+                case IconType.File:
+                    flags |= SHGFI.SHGFI_ICON;
+                    break;
+                default:
+                    break;
+            }
+
             SHFILEINFO shfi = new SHFILEINFO();
 
             IntPtr iconHandle = IntPtr.Zero;
@@ -219,27 +239,13 @@ namespace RootApp.IO
 
             try
             {
-                SHGetFileInfo(
-                    path,
-                    fileAttributes,
-                    ref shfi,
-                    SHFILEINFO.Size,
-                    SHGFI.SHGFI_SYSICONINDEX | SHGFI.SHGFI_ICON
-                    //| SHGFI.SHGFI_OVERLAYINDEX
-                    | (iconSize == IconSize.Small ? SHGFI.SHGFI_SMALLICON : SHGFI.SHGFI_LARGEICON));
+                SHGetFileInfo(path, fileAttributes, ref shfi, SHFILEINFO.Size, flags);
 
                 IImageList imageList = null;
                 Guid guid = new Guid(IID_IImageList);
 
                 SHGetImageList((int)iconSize, ref guid, ref imageList);
                 imageList.GetIcon(shfi.iIcon, (int)(IMAGELISTDRAWFLAGS.ILD_TRANSPARENT | IMAGELISTDRAWFLAGS.ILD_IMAGE), ref iconHandle);
-
-                //int overlayIndex = (shfi.iIcon >> 24) - 1;
-                //if (overlayIndex >= 0x0)
-                //{
-                //    overlayIndex = SHGetIconOverlayIndex(null, 0x0FFFFFFE) - 1;
-                //    imageList.GetIcon(overlayIndex, (int)(IMAGELISTDRAWFLAGS.ILD_TRANSPARENT | IMAGELISTDRAWFLAGS.ILD_IMAGE), ref iconHandle);
-                //}
 
                 using (Icon icon = (Icon)Icon.FromHandle(iconHandle).Clone())
                 {
