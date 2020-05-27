@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Media;
+using static RootApp.IO.IconInfo;
 
 namespace RootApp.IO
 {
     public class EntryFactory
     {
-        private const IconInfo.IconSize iconSize = IconInfo.IconSize.Small;
+        private const IconSize iconSize = IconSize.Small;
         private const string defaultDirectoryPath = @"C:\Path";
         private const string defaultDirectoryExtension = "<directory>";
         private const string defaultFilePath = @"C:\Path";
         private const string defaultFileExtension = "<file>";
 
         private List<string> fileExtensions = new List<string> { "exe", "lnk" };
-        IconInfo2.IconType iconType = IconInfo2.IconType.File;
+        IconType iconType = IconType.File;
 
         private readonly Dictionary<string, ImageSource> icons = new Dictionary<string, ImageSource>();
 
@@ -22,20 +23,20 @@ namespace RootApp.IO
         {
             if (!icons.ContainsKey(defaultDirectoryExtension))
             {
-                icons.Add(defaultDirectoryExtension, IconInfo2.GetSystemIcon(
+                icons.Add(defaultDirectoryExtension, GetSystemIcon(
                     defaultDirectoryPath,
                     iconSize,
-                    IconInfo2.IconType.System,
+                    IconType.System,
                     FileAttributes.Directory
                 ));
             }
 
             if (!icons.ContainsKey(defaultFileExtension))
             {
-                icons.Add(defaultFileExtension, IconInfo2.GetSystemIcon(
+                icons.Add(defaultFileExtension, GetSystemIcon(
                     defaultFilePath,
                     iconSize,
-                    IconInfo2.IconType.System,
+                    IconType.System,
                     FileAttributes.Normal
                 ));
             }
@@ -47,7 +48,7 @@ namespace RootApp.IO
             try
             {
                 entry.Type = EntryType.Drive;
-                entry.Icon = IconInfo2.GetSystemIcon(info.Name, iconSize, IconInfo2.IconType.File);
+                entry.Icon = GetSystemIcon(info.Name, iconSize, IconType.File);
                 entry.FullName = info.Name;
                 entry.Name = info.Name;
                 entry.Size = info.TotalSize;
@@ -79,10 +80,10 @@ namespace RootApp.IO
             {
                 DirectoryInfo info = new DirectoryInfo(path);
 
-                string iconPath = iconType == IconInfo2.IconType.File ? path : defaultDirectoryExtension;
+                string iconPath = iconType == IconType.File ? path : defaultDirectoryExtension;
                 if (!icons.ContainsKey(iconPath))
                 {
-                    icons.Add(iconPath, IconInfo2.GetSystemIcon(iconPath, iconSize, iconType, FileAttributes.Directory));
+                    icons.Add(iconPath, GetSystemIcon(iconPath, iconSize, iconType, FileAttributes.Directory));
                 }
 
                 return new Entry
@@ -109,15 +110,15 @@ namespace RootApp.IO
                 string iconPath = String.IsNullOrEmpty(info.Extension) ? defaultFileExtension : info.Extension;
                 if (!icons.ContainsKey(iconPath))
                 {
-                    icons.Add(iconPath, IconInfo2.GetSystemIcon(iconPath, iconSize, IconInfo2.IconType.System, FileAttributes.Normal));
+                    icons.Add(iconPath, GetSystemIcon(iconPath, iconSize, IconType.System, FileAttributes.Normal));
                 }
 
-                if (iconType == IconInfo2.IconType.File && fileExtensions.Contains(iconPath.Replace(".", "")))
+                if (iconType == IconType.File && fileExtensions.Contains(iconPath.Replace(".", "")))
                 {
                     iconPath = path;
                     if (!icons.ContainsKey(iconPath))
                     {
-                        icons.Add(iconPath, IconInfo2.GetSystemIcon(iconPath, iconSize, iconType, FileAttributes.Normal));
+                        icons.Add(iconPath, GetSystemIcon(iconPath, iconSize, iconType, FileAttributes.Normal));
                     }
                 }
 
