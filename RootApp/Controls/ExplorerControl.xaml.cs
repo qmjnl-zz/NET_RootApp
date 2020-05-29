@@ -264,6 +264,7 @@ namespace RootApp.Controls
         {
             GridViewColumnHeader header = (GridViewColumnHeader)sender;
             Sort(header);
+            SelectEntry(listViewFile.SelectedIndex, true);
         }
 
         private void Sort(GridViewColumnHeader header)
