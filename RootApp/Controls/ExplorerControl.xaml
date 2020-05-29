@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:sys="clr-namespace:System;assembly=System"
              xmlns:local="clr-namespace:RootApp"
              xmlns:local_IO="clr-namespace:RootApp.IO"
@@ -10,6 +11,18 @@
              d:DesignHeight="450"
              d:DesignWidth="800"
              Margin="5">
+    <!--xmlns:cm="clr-namespace:System.ComponentModel;assembly=WindowsBase"-->
+    <!--xmlns:data="clr-namespace:System.Windows.Data;assembly=PresentationFramework"-->
+
+    <UserControl.Resources>
+        <CollectionViewSource x:Key="viewSource"
+                              x:Name="viewSource"
+                              Source="">
+            <CollectionViewSource.SortDescriptions>
+                <!--<componentmodel:SortDescription PropertyName="Type" Direction="Ascending" />-->
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
 
     <DockPanel>
 
@@ -40,14 +53,19 @@
 
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="&#x2191; Name"
-                                    Width="300">
+                    <GridViewColumn Width="300">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="{Binding Path=Tag, RelativeSource={RelativeSource Mode=Self}}"
+                                                  Tag="Name"
+                                                  x:Name="headerName"
+                                                  Click="GridViewColumnHeader_Click" />
+                        </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="{Binding Icon}"
-                                           Width="{Binding Icon.Width}"
-                                           Height="{Binding Icon.Height}"
+                                           Width="{Binding Path=ImageSize.Width, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                                           Height="{Binding Path=ImageSize.Height, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
                                            Margin="0,0,8,0" />
                                     <!-- UseLayoutRounding="True" /> -->
                                     <TextBlock>
@@ -57,7 +75,7 @@
                                                         Value="{Binding Name}" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Type}"
-                                                                 Value="{x:Static local_IO:EntryType.ParentDirectory}">
+                                                                 Value="{x:Static local_IO:EntryType.TopLevel}">
                                                         <Setter Property="Text"
                                                                 Value=".." />
                                                     </DataTrigger>
@@ -70,12 +88,23 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Header="&#x2193; Ext"
-                                    Width="150"
-                                    DisplayMemberBinding="{Binding Extension}" />
+                    <GridViewColumn Width="150"
+                                    DisplayMemberBinding="{Binding Extension}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="{Binding Path=Tag, RelativeSource={RelativeSource Mode=Self}}"
+                                                  Tag="Extension"
+                                                  x:Name="headerExtension"
+                                                  Click="GridViewColumnHeader_Click" />
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
 
-                    <GridViewColumn Header="Size"
-                                    Width="100">
+                    <GridViewColumn Width="100">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="{Binding Path=Tag, RelativeSource={RelativeSource Mode=Self}}"
+                                                  Tag="Size"
+                                                  x:Name="headerSize"
+                                                  Click="GridViewColumnHeader_Click" />
+                        </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock HorizontalAlignment="Right">
@@ -85,7 +114,7 @@
                                                     Value="{Binding Size, StringFormat='{}{0:N0}', ConverterCulture=ru-RU}" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Type}"
-                                                             Value="{x:Static local_IO:EntryType.ParentDirectory}">
+                                                             Value="{x:Static local_IO:EntryType.TopLevel}">
                                                     <Setter Property="Text"
                                                             Value="" />
                                                 </DataTrigger>
@@ -114,9 +143,16 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Header="Date"
-                                    Width="150"
-                                    DisplayMemberBinding="{Binding Date, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" />
+                    <GridViewColumn Width="150"
+                                    DisplayMemberBinding="{Binding Date, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="{Binding Path=Tag, RelativeSource={RelativeSource Mode=Self}}"
+                                                  Tag="Date"
+                                                  x:Name="headerDate"
+                                                  Click="GridViewColumnHeader_Click" />
+                        </GridViewColumn.Header>
+
+                    </GridViewColumn>
                 </GridView>
             </ListView.View>
 

@@ -144,7 +144,7 @@ namespace RootApp.IO
         [PreserveSig] int GetOverlayImage(int iOverlay, ref int piIndex);
     };
 
-    class IconInfo
+    public class IconInfo
     {
         const string IID_IImageList = "46EB5926-582E-4017-9FDF-E8998DAA0950";
         const string IID_IImageList2 = "192B9D83-50FC-457B-90A0-2B82A8B5DAE1";
@@ -168,7 +168,7 @@ namespace RootApp.IO
             Jumbo = 4
         }
 
-        public static Size GetIconSize(IconSize iconSize)
+        public static Size GetImageSize(IconSize iconSize)
         {
             int length;
 
@@ -223,7 +223,7 @@ namespace RootApp.IO
 
         public static ImageSource GetSystemIcon(string path, IconSize iconSize, IconType iconType, FileAttributes fileAttributes = new FileAttributes())
         {
-            Size size = GetIconSize(iconSize);
+            Size size = GetImageSize(iconSize);
 
             SHGFI flags = SHGFI.SHGFI_SYSICONINDEX | (iconSize == IconSize.Small ? SHGFI.SHGFI_SMALLICON : SHGFI.SHGFI_LARGEICON);
             switch (iconType)

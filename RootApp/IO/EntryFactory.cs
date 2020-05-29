@@ -8,7 +8,8 @@ namespace RootApp.IO
 {
     public class EntryFactory
     {
-        private const IconSize iconSize = IconSize.Small;
+        public IconSize IconSize { get; set; }
+
         private const string defaultDirectoryPath = @"C:\Path";
         private const string defaultDirectoryExtension = "<directory>";
         private const string defaultFilePath = @"C:\Path";
@@ -19,13 +20,15 @@ namespace RootApp.IO
 
         private readonly Dictionary<string, ImageSource> icons = new Dictionary<string, ImageSource>();
 
-        public EntryFactory()
+        public EntryFactory(IconSize iconSize)
         {
+            IconSize = iconSize;
+
             if (!icons.ContainsKey(defaultDirectoryExtension))
             {
                 icons.Add(defaultDirectoryExtension, GetSystemIcon(
                     defaultDirectoryPath,
-                    iconSize,
+                    IconSize,
                     IconType.System,
                     FileAttributes.Directory
                 ));
@@ -35,7 +38,7 @@ namespace RootApp.IO
             {
                 icons.Add(defaultFileExtension, GetSystemIcon(
                     defaultFilePath,
-                    iconSize,
+                    IconSize,
                     IconType.System,
                     FileAttributes.Normal
                 ));
@@ -48,7 +51,7 @@ namespace RootApp.IO
             try
             {
                 entry.Type = EntryType.Drive;
-                entry.Icon = GetSystemIcon(info.Name, iconSize, IconType.File);
+                entry.Icon = GetSystemIcon(info.Name, IconSize, IconType.File);
                 entry.FullName = info.Name;
                 entry.Name = info.Name;
                 entry.Size = info.TotalSize;
@@ -57,13 +60,13 @@ namespace RootApp.IO
             return entry;
         }
 
-        public Entry GetParentDirectory(string path)
+        public Entry GetTopLevel(string path)
         {
             try
             {
                 return new Entry
                 {
-                    Type = EntryType.ParentDirectory,
+                    Type = EntryType.TopLevel,
                     FullName = path,
                     Date = File.GetLastWriteTime(path)
                 };
@@ -83,7 +86,7 @@ namespace RootApp.IO
                 string iconPath = iconType == IconType.File ? path : defaultDirectoryExtension;
                 if (!icons.ContainsKey(iconPath))
                 {
-                    icons.Add(iconPath, GetSystemIcon(iconPath, iconSize, iconType, FileAttributes.Directory));
+                    icons.Add(iconPath, GetSystemIcon(iconPath, IconSize, iconType, FileAttributes.Directory));
                 }
 
                 return new Entry
@@ -110,7 +113,7 @@ namespace RootApp.IO
                 string iconPath = String.IsNullOrEmpty(info.Extension) ? defaultFileExtension : info.Extension;
                 if (!icons.ContainsKey(iconPath))
                 {
-                    icons.Add(iconPath, GetSystemIcon(iconPath, iconSize, IconType.System, FileAttributes.Normal));
+                    icons.Add(iconPath, GetSystemIcon(iconPath, IconSize, IconType.System, FileAttributes.Normal));
                 }
 
                 if (iconType == IconType.File && fileExtensions.Contains(iconPath.Replace(".", "")))
@@ -118,7 +121,7 @@ namespace RootApp.IO
                     iconPath = path;
                     if (!icons.ContainsKey(iconPath))
                     {
-                        icons.Add(iconPath, GetSystemIcon(iconPath, iconSize, iconType, FileAttributes.Normal));
+                        icons.Add(iconPath, GetSystemIcon(iconPath, IconSize, iconType, FileAttributes.Normal));
                     }
                 }
 

@@ -2,9 +2,9 @@
 {
     public enum EntryType
     {
-        Drive,
-        ParentDirectory,
-        Directory,
-        File
+        TopLevel = 0,
+        Drive = 1,
+        Directory = 2,
+        File = 3
     }
 }
