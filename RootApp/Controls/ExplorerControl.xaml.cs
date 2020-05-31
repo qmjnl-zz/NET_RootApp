@@ -44,6 +44,7 @@ namespace RootApp.Controls
         {
             ExplorerControl explorer = (ExplorerControl)d;
             explorer.GetEntries();
+            explorer.SelectEntry((string)e.OldValue, true);
         }
 
         // Using a DependencyProperty as the backing store for Path.  This enables animation, styling, binding, etc...
@@ -56,7 +57,6 @@ namespace RootApp.Controls
         #endregion
 
         #region IconSize
-
 
         private static void IconSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -83,7 +83,6 @@ namespace RootApp.Controls
                 typeof(IconInfo.IconSize),
                 typeof(ExplorerControl),
                 new PropertyMetadata(IconInfo.IconSize.Small, new PropertyChangedCallback(IconSizeChanged)));
-
 
         #endregion
 
@@ -134,8 +133,10 @@ namespace RootApp.Controls
             entryFactory = new EntryFactory(IconSize);
 
             viewSource = (CollectionViewSource)FindResource("viewSource");
+            sortPropertyName = headerName.Tag.ToString();
+            sortDirection = ListSortDirection.Ascending;
 
-            Sort(headerName);
+            Sort(headerName, sortDirection);
         }
 
         protected void GetEntries()
@@ -179,19 +180,18 @@ namespace RootApp.Controls
 
                 viewSource.Source = listFileInfo;
                 listViewFile.ItemsSource = viewSource.View;
-
-                if (listFileInfo.Count > 0)
-                {
-                    SelectEntry(0);
-                }
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message);
                 string path = Path;
                 Path = Directory.GetParent(Path)?.FullName;
-                SelectEntry(path);
             }
+        }
+
+        private void ScrollToSelected()
+        {
+            listViewFile.ScrollIntoView(listViewFile.Items[listViewFile.SelectedIndex]);
         }
 
         private void SelectEntry(int index, bool scroll = false)
@@ -200,7 +200,7 @@ namespace RootApp.Controls
 
             if (scroll == true)
             {
-                listViewFile.ScrollIntoView(listViewFile.Items[listViewFile.SelectedIndex]);
+                ScrollToSelected();
             }
 
             listViewFile.UpdateLayout();
@@ -218,6 +218,7 @@ namespace RootApp.Controls
                     return;
                 }
             }
+            SelectEntry(0, scroll);
         }
 
         private void ListViewFile_KeyDown(object sender, KeyEventArgs e)
@@ -226,9 +227,7 @@ namespace RootApp.Controls
             {
                 if (Path != null && !String.IsNullOrEmpty(Path))
                 {
-                    string path = Path;
                     Path = Directory.GetParent(Path)?.FullName;
-                    SelectEntry(path, true);
                 }
                 return;
             }
@@ -239,9 +238,7 @@ namespace RootApp.Controls
             {
                 if (Path != null && !String.IsNullOrEmpty(Path))
                 {
-                    string path = Path;
                     Path = Directory.GetParent(Path)?.FullName;
-                    SelectEntry(path, true);
                 }
                 return;
             }
@@ -252,10 +249,6 @@ namespace RootApp.Controls
                 {
                     Path = entry.FullName;
                 }
-                if (entry.Type == EntryType.Directory)
-                {
-                    SelectEntry(0, true);
-                }
                 return;
             }
         }
@@ -263,11 +256,24 @@ namespace RootApp.Controls
         private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
         {
             GridViewColumnHeader header = (GridViewColumnHeader)sender;
-            Sort(header);
-            SelectEntry(listViewFile.SelectedIndex, true);
+
+            if (sortPropertyName == header.Tag.ToString())
+            {
+                sortDirection = sortDirection == ListSortDirection.Ascending
+                    ? ListSortDirection.Descending
+                    : ListSortDirection.Ascending;
+            }
+            else
+            {
+                sortPropertyName = header.Tag.ToString();
+                sortDirection = ListSortDirection.Ascending;
+            }
+
+            Sort(header, sortDirection);
+            ScrollToSelected();
         }
 
-        private void Sort(GridViewColumnHeader header)
+        private void Sort(GridViewColumnHeader header, ListSortDirection listSortDirection)
         {
             GridView gridView = (GridView)listViewFile.View;
             foreach (var item in gridView.Columns)
@@ -276,35 +282,12 @@ namespace RootApp.Controls
                 itemHeader.Content = itemHeader.Tag.ToString();
             }
 
-            if (String.IsNullOrEmpty(sortPropertyName))
-            {
-                //sortPropertyName = "Name";
-                //sortPropertyName = nameof(Entry.Name);
-                sortPropertyName = headerName.Tag.ToString();
-                sortDirection = ListSortDirection.Ascending;
-            }
-            else
-            {
-                if (sortPropertyName == header.Tag.ToString())
-                {
-                    sortDirection = sortDirection == ListSortDirection.Ascending
-                        ? ListSortDirection.Descending
-                        : ListSortDirection.Ascending;
-                }
-                else
-                {
-                    sortPropertyName = header.Tag.ToString();
-                    sortDirection = ListSortDirection.Ascending;
-                }
-            }
-
             viewSource.SortDescriptions.Clear();
-            //viewSource.SortDescriptions.Add(new SortDescription("Type", ListSortDirection.Ascending));
             viewSource.SortDescriptions.Add(new SortDescription(nameof(Entry.Type), ListSortDirection.Ascending));
-            viewSource.SortDescriptions.Add(new SortDescription(sortPropertyName, sortDirection));
+            viewSource.SortDescriptions.Add(new SortDescription(sortPropertyName, listSortDirection));
             viewSource.SortDescriptions.Add(new SortDescription(headerName.Tag.ToString(), ListSortDirection.Ascending));
 
-            header.Content = (sortDirection == ListSortDirection.Ascending ? symbolSortAsc : symbolSortDesc) + " " + header.Tag.ToString();
+            header.Content = (listSortDirection == ListSortDirection.Ascending ? symbolSortAsc : symbolSortDesc) + " " + header.Tag.ToString();
         }
     }
 }
